@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/loadingscreen.dart';
+import 'pages/summary.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +20,10 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const LoadingScreen(),
+      routes: {
+        '/summary': (context) => const SummaryPage(),
+        '/onboarding' : (context) => const LoadingScreen()
+      },
     );
   }
 }
