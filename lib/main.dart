@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/loadingscreen.dart';
-import 'pages/summary.dart';
+import 'pages/summaryscreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const LoadingScreen(),
       routes: {
-        '/summary': (context) => const SummaryPage(),
+        '/summary': (context) => const SummaryScreen(),
         '/onboarding' : (context) => const LoadingScreen()
       },
     );

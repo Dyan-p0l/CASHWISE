@@ -82,6 +82,8 @@ flutter:
         - asset: assets/fonts/Inter-Bold.otf
         - asset: assets/fonts/Inter-ExtraBold.otf
         - asset: assets/fonts/Inter-Black.otf
+        - asset: assets/fonts/Inter-Medium.otf
+          weight: 500
     
     - family: BebasNeue
       fonts:

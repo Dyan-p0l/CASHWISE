@@ -183,7 +183,7 @@ class OnboardingScreen2 extends StatelessWidget {
             const SizedBox(height: 50),
             ElevatedButton(
               onPressed: () {
-                // Navigate to home screen
+                Navigator.pushNamed(context, '/summary');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0XFF02032D),
