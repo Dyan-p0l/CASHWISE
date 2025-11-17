@@ -14,6 +14,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   final pages = [
     OnboardingScreen1(),
+    OnboardingScreenB(),
     OnboardingScreen2(),
   ];
 
@@ -98,6 +99,44 @@ class OnboardingScreen1 extends StatelessWidget {
                 color: Color(0XFF02032D),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class OnboardingScreenB extends StatelessWidget {
+  const OnboardingScreenB({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Color(0XFF02032D), 
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(30),
+              child: Text(
+                'Easily manage your expenses and stay in control of your budget.',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  color: Color(0XFF56DFB1),
+                  fontSize: 26,
+                ),
+                textAlign: TextAlign.left,
+              ),
+            ),
+            Image.asset(
+              'assets/images/onBoardingb.png',
+              height: 310,
+              width: 310,
+              fit: BoxFit.cover,
+            ),
+            const SizedBox(height: 50),
           ],
         ),
       ),
