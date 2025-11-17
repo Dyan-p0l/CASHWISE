@@ -18,6 +18,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
     OnboardingScreen2(),
   ];
 
+  final List<Color> indicatorColor = [
+    Color(0xFF02032D),
+    Color(0XFF56DFB1),
+    Color(0xFF02032D)
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +55,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: _currentPage == index
-                        ? const Color(0xFF02032D)
+                        ? indicatorColor[_currentPage]
                         : Colors.grey,
                     borderRadius: BorderRadius.circular(20),
                   ),
