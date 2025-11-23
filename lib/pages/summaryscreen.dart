@@ -152,7 +152,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                                       color: Theme.of(context).primaryColor,
                                     ),
                                   ),
-                                ),
+                                )
                               ],
                             ),
                           ),
@@ -171,7 +171,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                                 const Text(
                                   "Total expenses",
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: Color(0XFF02032D),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16),
                                 ),
@@ -185,10 +185,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
                                     style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: Color(0XFF02032D),
                                     ),
                                   ),
-                                ),
+                                )
                               ],
                             ),
                           ),
@@ -308,47 +308,67 @@ class _SummaryScreenState extends State<SummaryScreen> {
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(40),
-          child: BottomNavigationBar(
-            backgroundColor: const Color(0xFF56DFB1),
-            selectedItemColor: Colors.black,
-            unselectedItemColor: Colors.black,
-            currentIndex: _selectedIndex,
-            onTap: (index) {
-              if (index == 1) {
-                setState(() => _showAddOptions = !_showAddOptions);
-              }
-              else if (index == 2) {
-                // History button
-                setState(() {
-                  _selectedIndex = index;
-                  _showAddOptions = false;
-                });
-                Navigator.pushNamed(context, '/history');   // <-- ADD THIS
-              }  
-              else {
-                setState(() {
-                  _selectedIndex = index;
-                  _showAddOptions = false;
-                });
-              }
-            },
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_outlined),
-                label: "Summary",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.add_circle, size: 30),
-                label: "Add Transaction",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.history),
-                label: "History",
-              ),
-            ],
+          child: Container(
+            height: 70,
+            decoration: const BoxDecoration(
+              color: Color(0xFF56DFB1),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(Icons.dashboard_outlined, "Summary", 0),
+                _buildNavItem(Icons.add_circle, "Add", 1),
+                _buildNavItem(Icons.history, "History", 2),
+              ],
+            ),
           ),
         ),
+      ),);
+
+  }
+
+
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    final bool isActive = _selectedIndex == index;
+
+    return GestureDetector(
+      onTap: () {
+        if (index == 1) {
+          setState((){
+            _showAddOptions = !_showAddOptions;
+          });
+        } else if (index == 2) {
+          setState(() {
+            _selectedIndex = index;
+            _showAddOptions = false;
+          });
+          Navigator.pushNamed(context, '/history');
+        } else {
+          setState(() {
+            _selectedIndex = index;
+            _showAddOptions = false;
+          });
+        }
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 33, color: Colors.black),
+          Text('$label', style: TextStyle(color: Colors.black)),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            margin: const EdgeInsets.only(top: 4),
+            height: isActive ? 5 : 0,
+            width: 38,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        ],
       ),
     );
   }
+
 }
