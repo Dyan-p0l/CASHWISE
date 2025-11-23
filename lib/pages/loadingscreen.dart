@@ -30,7 +30,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       body: Stack(
         children: [
           LiquidSwipe(
-            pages: pages,
+            pages: pages, 
             enableLoop: false,
             fullTransitionValue: 600,
             waveType: WaveType.liquidReveal,
@@ -183,7 +183,7 @@ class OnboardingScreen2 extends StatelessWidget {
             const SizedBox(height: 50),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/summary');
+                Navigator.pushNamed(context, '/addexpenses');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0XFF02032D),

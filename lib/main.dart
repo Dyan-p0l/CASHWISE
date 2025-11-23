@@ -1,6 +1,8 @@
+import 'package:cashwise/pages/addexpensescreen.dart';
 import 'package:flutter/material.dart';
 import 'pages/loadingscreen.dart';
 import 'pages/summaryscreen.dart';
+import 'pages/addincomescreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +24,9 @@ class MyApp extends StatelessWidget {
       home: const LoadingScreen(),
       routes: {
         '/summary': (context) => const SummaryScreen(),
-        '/onboarding' : (context) => const LoadingScreen()
+        '/onboarding' : (context) => const LoadingScreen(),
+        '/addincome': (context) => const AddIncomeScreen(),
+        '/addexpenses': (contect) => const AddExpenseScreen(),
       },
     );
   }
