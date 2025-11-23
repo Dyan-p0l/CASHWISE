@@ -1,8 +1,10 @@
 import 'package:cashwise/pages/addexpensescreen.dart';
+import 'package:cashwise/pages/transactionhistory.dart';
 import 'package:flutter/material.dart';
 import 'pages/loadingscreen.dart';
 import 'pages/summaryscreen.dart';
 import 'pages/addincomescreen.dart';
+import 'pages/transactionhistory.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Color(0xFF02032D),   
         colorScheme: ColorScheme.fromSwatch().copyWith(
-          secondary: Color(0XFF56DFB1),   // secondary color
+          secondary: Color(0XFF56DFB1),
         ),
       ),
       home: const LoadingScreen(),
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/onboarding' : (context) => const LoadingScreen(),
         '/addincome': (context) => const AddIncomeScreen(),
         '/addexpenses': (contect) => const AddExpenseScreen(),
+        '/history' : (context) => const TransactionHistory(),
       },
     );
   }

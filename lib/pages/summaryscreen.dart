@@ -13,15 +13,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Safe/robust spacing so buttons sit above the bottom nav and any system insets:
+
     final media = MediaQuery.of(context);
-    final double bottomInset = media.viewPadding.bottom; // e.g., gesture nav area
-    // estimated bottom navigation bar height (you used padding + ClipRRect)
+    final double bottomInset = media.viewPadding.bottom; 
     const double estimatedNavBarHeight = 10.0;
-    // where the buttons rest when visible:
-    final double visibleBottom =
-        estimatedNavBarHeight + 14 + bottomInset; 
-    // when hidden, place them well below the screen:
+    final double visibleBottom = estimatedNavBarHeight + 14 + bottomInset; 
     final double hiddenBottom = -140.0;
 
     return Scaffold(
@@ -36,7 +32,6 @@ class _SummaryScreenState extends State<SummaryScreen> {
       ),
       body: Stack(
         children: [
-          // Main content
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -290,9 +285,17 @@ class _SummaryScreenState extends State<SummaryScreen> {
             currentIndex: _selectedIndex,
             onTap: (index) {
               if (index == 1) {
-                // toggle add options
                 setState(() => _showAddOptions = !_showAddOptions);
-              } else {
+              }
+              else if (index == 2) {
+                // History button
+                setState(() {
+                  _selectedIndex = index;
+                  _showAddOptions = false;
+                });
+                Navigator.pushNamed(context, '/history');   // <-- ADD THIS
+              }  
+              else {
                 setState(() {
                   _selectedIndex = index;
                   _showAddOptions = false;
