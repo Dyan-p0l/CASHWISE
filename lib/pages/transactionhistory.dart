@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 class TransactionHistory extends StatefulWidget {
   const TransactionHistory({super.key});
@@ -8,89 +9,85 @@ class TransactionHistory extends StatefulWidget {
 }
 
 class _TransactionHistoryState extends State<TransactionHistory> {
-  
   int _selectedIndex = 2;
   bool _showAddOptions = false;
-    
-  final Map<String, List<Map<String, dynamic>>> transactions = {
-    "Today": [
-      {
-        "title": "DOST Stipend cutie",
-        "category": "Allowance",
-        "amount": 8000.00,
-        "isIncome": true,
-        "icon": Icons.wallet_giftcard,
-        "color": Colors.orange,
-      },
-      {
-        "title": "Allowance gikan ate",
-        "category": "Allowance",
-        "amount": 2000.00,
-        "isIncome": true,
-        "icon": Icons.wallet_giftcard,
-        "color": Colors.orange,
-      },
-    ],
-    "Saturday, 22 Nov 2025": [
-      {
-        "title": "Kaon Ribshack",
-        "category": "Food",
-        "amount": 180.00,
-        "isIncome": false,
-        "icon": Icons.restaurant,
-        "color": Colors.red,
-      },
-      {
-        "title": "Palit chikoket",
-        "category": "Food",
-        "amount": 30.00,
-        "isIncome": false,
-        "icon": Icons.restaurant,
-        "color": Colors.red,
-      },
-      {
-        "title": "Nag yards sa JANCOR",
-        "category": "Recreation",
-        "amount": 100.00,
-        "isIncome": false,
-        "icon": Icons.sports_esports,
-        "color": Colors.cyan,
-      },
-      {
-        "title": "Allowance gikan ate",
-        "category": "Allowance",
-        "amount": 2000.00,
-        "isIncome": true,
-        "icon": Icons.wallet_giftcard,
-        "color": Colors.orange,
-      },
-      {
-        "title": "24 Cheken with gabriela",
-        "category": "Food",
-        "amount": 300.00,
-        "isIncome": false,
-        "icon": Icons.restaurant,
-        "color": Colors.red,
-      },
-      {
-        "title": "Palit battery",
-        "category": "Shopping",
-        "amount": 25.00,
-        "isIncome": false,
-        "icon": Icons.shopping_bag,
-        "color": Colors.yellow.shade700,
-      },
-    ],
-  };
+
+  List<Map<String, dynamic>> transactions = []; // All transactions
+  String _filter = "ALL"; // "ALL", "INCOME", "EXPENSES"
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTransactions();
+  }
+
+  Future<void> _loadTransactions() async {
+    final db = DBHelper.instance;
+    List<Map<String, dynamic>> txList = await db.getAllTransactions();
+
+    setState(() {
+      transactions = txList.map((tx) {
+        Color color;
+        IconData icon;
+
+        switch (tx['category'].toString().toLowerCase()) {
+          case 'food':
+            color = Colors.red;
+            icon = Icons.restaurant;
+            break;
+          case 'allowance':
+            color = Colors.orange;
+            icon = Icons.wallet_giftcard;
+            break;
+          case 'shopping':
+            color = Colors.yellow.shade700;
+            icon = Icons.shopping_bag;
+            break;
+          case 'recreation':
+            color = Colors.cyan;
+            icon = Icons.sports_esports;
+            break;
+          default:
+            color = Colors.grey;
+            icon = Icons.attach_money;
+        }
+
+        return {
+          "title": tx['label'] ?? tx['category'],
+          "category": tx['category'],
+          "amount": tx['amount'],
+          "isIncome": tx['type'] == 'income',
+          "icon": icon,
+          "color": color,
+          "date": tx['date'],
+        };
+      }).toList();
+    });
+  }
+
+  // Returns transactions filtered by _filter
+  List<Map<String, dynamic>> get filteredTransactions {
+    if (_filter == "ALL") return transactions;
+    if (_filter == "INCOME") return transactions.where((tx) => tx['isIncome']).toList();
+    if (_filter == "EXPENSES") return transactions.where((tx) => !tx['isIncome']).toList();
+    return transactions;
+  }
 
   @override
   Widget build(BuildContext context) {
-
     final media = MediaQuery.of(context);
-    final double bottomInset = media.viewPadding.bottom; 
+    final double bottomInset = media.viewPadding.bottom;
     const double estimatedNavBarHeight = 10.0;
-    final double visibleBottom = estimatedNavBarHeight + 14 + bottomInset; 
+    final double visibleBottom = estimatedNavBarHeight + 14 + bottomInset;
     final double hiddenBottom = -140.0;
+
+    // Group filtered transactions by date
+    Map<String, List<Map<String, dynamic>>> grouped = {};
+    for (var tx in filteredTransactions) {
+      String date = tx['date'];
+      if (!grouped.containsKey(date)) grouped[date] = [];
+      grouped[date]!.add(tx);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F8),
@@ -98,7 +95,6 @@ class _TransactionHistoryState extends State<TransactionHistory> {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
-
         title: const Text(
           "TRANSACTION HISTORY",
           style: TextStyle(
@@ -108,157 +104,127 @@ class _TransactionHistoryState extends State<TransactionHistory> {
           ),
         ),
       ),
-
-      body:   
-        Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: 
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    
-                    Row(
-                      children: [
-                        filterButton("ALL", isActive: true),
-                        const SizedBox(width: 10),
-                        filterButton("INCOME"),
-                        const SizedBox(width: 10),
-                        filterButton("EXPENSES"),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    ...transactions.entries.map((entry) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            entry.key.toUpperCase(),
-                            style: const TextStyle(
-                              color: Color(0xFF02032D),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          ...entry.value.map((tx) => transactionItem(tx)).toList(),
-                  
-                          const SizedBox(height: 25),
-                        ],
-                      );
-                    }).toList(),
+                    filterButton("ALL"),
+                    const SizedBox(width: 10),
+                    filterButton("INCOME"),
+                    const SizedBox(width: 10),
+                    filterButton("EXPENSES"),
                   ],
                 ),
-            ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 320),
-              curve: Curves.easeOut,
-              // Use either visibleBottom or hiddenBottom depending on state:
-              bottom: _showAddOptions ? visibleBottom : hiddenBottom,
-              left: 0,
-              right: 0,
-              child: IgnorePointer(
-                // Prevent taps when hidden (opacity 0 -> still blocks touches), so use IgnorePointer
-                ignoring: !_showAddOptions,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 250),
-                  opacity: _showAddOptions ? 1 : 0,
-                  curve: Curves.easeInOut,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 20),
+                // Render grouped transactions
+                ...grouped.entries.map((entry) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedScale(
-                            scale: _showAddOptions ? 1.0 : 0.8,
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOutBack,
-                            child: ElevatedButton(
+                      Text(
+                        entry.key.toUpperCase(),
+                        style: const TextStyle(
+                          color: Color(0xFF02032D),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...entry.value.map((tx) => transactionItem(tx)).toList(),
+                      const SizedBox(height: 25),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+          // Add options buttons
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeOut,
+            bottom: _showAddOptions ? visibleBottom : hiddenBottom,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: !_showAddOptions,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 250),
+                opacity: _showAddOptions ? 1 : 0,
+                curve: Curves.easeInOut,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedScale(
+                          scale: _showAddOptions ? 1.0 : 0.8,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutBack,
+                          child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0XFF56DFB1),
                                 shape: const CircleBorder(),
                                 padding: const EdgeInsets.all(20),
                                 elevation: 6,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _showAddOptions = false;
-                                  Navigator.pushNamed(context, '/addincome');
-                                });
+                              onPressed: () async {
+                                setState(() => _showAddOptions = false);
+                                await Navigator.pushNamed(context, '/addincome');
+                                _loadTransactions();
                               },
                               child: Column(
-                                children: [
-                                  const Icon(
-                                    Icons.account_balance_wallet,
-                                    color: Color(0XFF02032D),
-                                    size: 38,
-                                  ),
-                                  const Text(
-                                    'Income  ', style: TextStyle(
+                                children: const [
+                                  Icon(Icons.account_balance_wallet,
+                                      color: Color(0XFF02032D), size: 38),
+                                  Text('Income', style: TextStyle(
                                       color: Color(0XFF02032D),
-                                      fontSize: 14
-                                    ),
-                                  ),
+                                      fontSize: 14)),
                                 ],
-                              )
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          // Expense button
-                          AnimatedScale(
-                            scale: _showAddOptions ? 1.0 : 0.8,
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOutBack,
-                            child: ElevatedButton(
+                              )),
+                        ),
+                        const SizedBox(height: 14),
+                        AnimatedScale(
+                          scale: _showAddOptions ? 1.0 : 0.8,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutBack,
+                          child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0XFFFF4D50),
                                 shape: const CircleBorder(),
                                 padding: const EdgeInsets.all(20),
                                 elevation: 6,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _showAddOptions = false;
-                                  Navigator.pushNamed(context, '/addexpenses');
-                                } );
+                              onPressed: () async {
+                                setState(() => _showAddOptions = false);
+                                await Navigator.pushNamed(context, '/addexpenses');
+                                _loadTransactions();
                               },
                               child: Column(
-                                children: [
-                                  const Icon(
-                                    Icons.payment,
-                                    color: Color(0XFF02032D),
-                                    size: 38,
-                                  ),
-                                  const Text(
-                                    'Expenses', style: TextStyle(
+                                children: const [
+                                  Icon(Icons.payment,
+                                      color: Color(0XFF02032D), size: 38),
+                                  Text('Expenses', style: TextStyle(
                                       color: Color(0XFF02032D),
-                                      fontSize: 12
-                                    ),
-                                  ),
+                                      fontSize: 12)),
                                 ],
-                              )
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-                    ],
-                  ),
+                              )),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 ),
               ),
             ),
-        
-          ],
-        ),
-      
+          ),
+        ],
+      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
         child: ClipRRect(
@@ -278,23 +244,31 @@ class _TransactionHistoryState extends State<TransactionHistory> {
             ),
           ),
         ),
-      ),  
+      ),
     );
   }
 
-  Widget filterButton(String label, {bool isActive = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF02032D) : Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: isActive ? Colors.white : Colors.black54,
-          fontSize: 14,
+  Widget filterButton(String label) {
+    final bool isActive = _filter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _filter = label;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF02032D) : Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: isActive ? Colors.white : Colors.black54,
+            fontSize: 14,
+          ),
         ),
       ),
     );
@@ -308,30 +282,28 @@ class _TransactionHistoryState extends State<TransactionHistory> {
         color: const Color(0xFF02032D),
         borderRadius: BorderRadius.circular(12),
       ),
-
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: tx["color"].withOpacity(0.15),
+              color: (tx["color"] as Color).withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              tx["icon"],
+              tx["icon"] as IconData,
               size: 28,
-              color: tx["color"],
+              color: tx["color"] as Color,
             ),
           ),
           const SizedBox(width: 16),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  tx["title"],
+                  tx["title"] as String,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -339,7 +311,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                   ),
                 ),
                 Text(
-                  tx["category"],
+                  tx["category"] as String,
                   style: TextStyle(
                     color: Colors.greenAccent.shade100,
                     fontSize: 13,
@@ -348,9 +320,8 @@ class _TransactionHistoryState extends State<TransactionHistory> {
               ],
             ),
           ),
-
           Text(
-            "${tx["isIncome"] ? "+" : "–"} ₱${tx["amount"].toStringAsFixed(2)}",
+            "${tx["isIncome"] ? "+" : "–"} ₱${(tx["amount"] as double).toStringAsFixed(2)}",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: tx["isIncome"] ? Colors.greenAccent : Colors.redAccent,
@@ -363,15 +334,14 @@ class _TransactionHistoryState extends State<TransactionHistory> {
   }
 
   Widget _buildNavItem(IconData icon, String label, int index) {
-    
     final bool isActive = _selectedIndex == index;
     return GestureDetector(
       onTap: () {
         if (index == 1) {
-          setState((){
+          setState(() {
             _showAddOptions = !_showAddOptions;
           });
-        }else if (index == 2) {
+        } else if (index == 2) {
           setState(() {
             _selectedIndex = index;
             _showAddOptions = false;
@@ -394,7 +364,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
             margin: const EdgeInsets.only(top: 4),
-            height: isActive ? 5 : 0,   
+            height: isActive ? 5 : 0,
             width: 38,
             decoration: BoxDecoration(
               color: Colors.black,
