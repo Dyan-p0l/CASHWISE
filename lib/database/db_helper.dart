@@ -87,4 +87,10 @@ class DBHelper {
     double expense = await getTotalExpense();
     return income - expense;
   }
+
+  //DELETE
+  Future<int> deleteTransaction(int id) async {
+    final db = await database;
+    return await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
+  }
 }

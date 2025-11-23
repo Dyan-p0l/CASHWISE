@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/db_helper.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class TransactionHistory extends StatefulWidget {
   const TransactionHistory({super.key});
@@ -48,11 +49,12 @@ class _TransactionHistoryState extends State<TransactionHistory> {
             icon = Icons.sports_esports;
             break;
           default:
-            color = Colors.grey;
-            icon = Icons.attach_money;
+            color = Colors.greenAccent;
+            icon = Icons.wallet_giftcard;
         }
 
         return {
+          "id": tx['id'],
           "title": tx['label'] ?? tx['category'],
           "category": tx['category'],
           "amount": tx['amount'],
@@ -71,6 +73,18 @@ class _TransactionHistoryState extends State<TransactionHistory> {
     if (_filter == "INCOME") return transactions.where((tx) => tx['isIncome']).toList();
     if (_filter == "EXPENSES") return transactions.where((tx) => !tx['isIncome']).toList();
     return transactions;
+  }
+  Future<void> _deleteTransaction(Map<String, dynamic> tx) async {
+    final db = DBHelper.instance;
+
+    // Assuming your DB has an 'id' field
+    int? id = tx['id'];
+    if (id != null) {
+      await db.deleteTransaction(id); // Implement this in your DBHelper
+      setState(() {
+        transactions.removeWhere((element) => element['id'] == id);
+      });
+    }
   }
 
   @override
@@ -275,63 +289,81 @@ class _TransactionHistoryState extends State<TransactionHistory> {
   }
 
   Widget transactionItem(Map<String, dynamic> tx) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF02032D),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+    return Slidable(
+      key: ValueKey(tx['title'] + tx['date']),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.25,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: (tx["color"] as Color).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
+          SlidableAction(
+            onPressed: (context) => _deleteTransaction(tx),
+            backgroundColor: Color(0xFFF3F4F8),
+            foregroundColor: Colors.red,
+            icon: Icons.delete,
+            label: 'Delete',
+            borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(
-              tx["icon"] as IconData,
-              size: 28,
-              color: tx["color"] as Color,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tx["title"] as String,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  tx["category"] as String,
-                  style: TextStyle(
-                    color: Colors.greenAccent.shade100,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            "${tx["isIncome"] ? "+" : "–"} ₱${(tx["amount"] as double).toStringAsFixed(2)}",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: tx["isIncome"] ? Colors.greenAccent : Colors.redAccent,
-              fontSize: 16,
-            ),
-          ),
         ],
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF02032D),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: (tx["color"] as Color).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                tx["icon"] as IconData,
+                size: 28,
+                color: tx["color"] as Color,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tx["title"] as String,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    tx["category"] as String,
+                    style: TextStyle(
+                      color: Colors.greenAccent.shade100,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              "${tx["isIncome"] ? "+" : "–"} ₱${(tx["amount"] as double).toStringAsFixed(2)}",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: tx["isIncome"] ? Colors.greenAccent : Colors.redAccent,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final bool isActive = _selectedIndex == index;

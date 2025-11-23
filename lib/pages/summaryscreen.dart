@@ -50,10 +50,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF02032D),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: Stack(
         children: [
@@ -67,7 +64,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                   "Financial Circulation",
                   style: TextStyle(
                     fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Colors.white,
                     fontSize: 30,
                   ),
