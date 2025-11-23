@@ -233,13 +233,12 @@ class _SummaryScreenState extends State<SummaryScreen> {
                               padding: const EdgeInsets.all(20),
                               elevation: 6,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _showAddOptions = false;
-                                Navigator.pushNamed(context, '/addincome');
-                              });
-                            },
-                            child: Column(
+                              onPressed: () async {
+                                setState(() => _showAddOptions = false);
+                                await Navigator.pushNamed(context, '/addincome'); // wait until the user returns
+                                _loadSummary();
+                              },
+                              child: Column(
                               children: [
                                 const Icon(
                                   Icons.account_balance_wallet,
@@ -271,13 +270,12 @@ class _SummaryScreenState extends State<SummaryScreen> {
                               padding: const EdgeInsets.all(20),
                               elevation: 6,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _showAddOptions = false;
-                                Navigator.pushNamed(context, '/addexpenses');
-                              } );
-                            },
-                            child: Column(
+                              onPressed: () async {
+                                setState(() => _showAddOptions = false);
+                                await Navigator.pushNamed(context, '/addexpenses');
+                                _loadSummary();
+                              },
+                              child: Column(
                               children: [
                                 const Icon(
                                   Icons.payment,
