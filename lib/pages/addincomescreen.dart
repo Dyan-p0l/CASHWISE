@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
+import 'package:intl/intl.dart';
 
 class AddIncomeScreen extends StatefulWidget {
   const AddIncomeScreen({super.key});
@@ -6,6 +8,7 @@ class AddIncomeScreen extends StatefulWidget {
   @override
   State<AddIncomeScreen> createState() => _AddIncomeScreenState();
 }
+
 
 class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
@@ -20,6 +23,28 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     "Gift",
     "Others",
   ];
+
+  String? selectedCategory;
+  double totalIncome = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIncomeTotal();
+  }
+
+  Future<void> _loadIncomeTotal() async {
+    totalIncome = await DBHelper.instance.getTotalIncome();
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    labelController.dispose();
+    dateController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,17 +78,17 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
             // TOTAL INCOME
             Column(
-              children: const [
+              children: [
                 Text(
-                  "₱ 1000.51",
-                  style: TextStyle(
+                  "₱${totalIncome.toStringAsFixed(2)}",
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 60,
                     fontFamily: 'Inter',
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
+                const SizedBox(height: 4),
+                const Text(
                   "TOTAL INCOME",
                   style: TextStyle(
                     color: Color(0XFF04FAA8),
@@ -152,7 +177,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                                               child: Text(c),
                                             ))
                                         .toList(),
-                                    onChanged: (value) {},
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedCategory = value;
+                                        });
+                                      },
                                   ),
                                 ],
                               ),
@@ -204,8 +233,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                                       );
 
                                       if (pickedDate != null) {
-                                        dateController.text =
-                                            "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                                        dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
                                       }
                                     },
                                   ),
@@ -269,8 +297,34 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                onPressed: () {
-                                  // Save action
+                                onPressed: () async {
+                                  final amount = double.tryParse(
+                                      amountController.text) ??
+                                      0;
+
+                                  if (amount == 0 ||
+                                      selectedCategory == null ||
+                                      dateController.text.isEmpty ||
+                                      labelController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            "Please fill out all fields."),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  await DBHelper.instance.addTransaction({
+                                    "amount": amount,
+                                    "category": selectedCategory!,
+                                    "date": dateController.text,
+                                    "label": labelController.text,
+                                    "type": "income",
+                                  });
+
+                                  Navigator.pop(context);
                                 },
                                 child: const Text("SAVE"),
                               ),

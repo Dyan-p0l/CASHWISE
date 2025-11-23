@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         '/summary': (context) => const SummaryScreen(),
         '/onboarding' : (context) => const LoadingScreen(),
         '/addincome': (context) => const AddIncomeScreen(),
-        '/addexpenses': (contect) => const AddExpenseScreen(),
+        '/addexpenses': (context) => const AddExpenseScreen(),
         '/history' : (context) => const TransactionHistory(),
       },
     );

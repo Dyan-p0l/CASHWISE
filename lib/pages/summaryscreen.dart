@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 class SummaryScreen extends StatefulWidget {
   const SummaryScreen({super.key});
@@ -8,6 +9,30 @@ class SummaryScreen extends StatefulWidget {
 }
 
 class _SummaryScreenState extends State<SummaryScreen> {
+  double balance = 0;
+  double totalIncome = 0;
+  double totalExpense = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSummary();
+  }
+
+  Future<void> _loadSummary() async {
+    final db = DBHelper.instance;
+
+    double inc = await db.getTotalIncome();
+    double exp = await db.getTotalExpense();
+    double bal = await db.getBalance();
+
+    setState(() {
+      totalIncome = inc;
+      totalExpense = exp;
+      balance = bal;
+    });
+  }
+
   int _selectedIndex = 0;
   bool _showAddOptions = false; // show add income / expense buttons
 
@@ -77,13 +102,14 @@ class _SummaryScreenState extends State<SummaryScreen> {
                               width: 205,
                             ),
                             const SizedBox(height: 10),
-                            Text(
-                              "₱20.51",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 40,
-                                color: Theme.of(context).primaryColor,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                "₱${balance.toStringAsFixed(2)}",
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  color: Theme.of(context).primaryColor,
+                                ),
                               ),
                             ),
                           ],
@@ -116,14 +142,17 @@ class _SummaryScreenState extends State<SummaryScreen> {
                                 Icon(Icons.trending_up,
                                     color: Theme.of(context).primaryColor, size: 58),
                                 const SizedBox(height: 20),
-                                Text(
-                                  "₱1000.51",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor,
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    "₱${totalIncome.toStringAsFixed(2)}",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           ),
@@ -138,25 +167,28 @@ class _SummaryScreenState extends State<SummaryScreen> {
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              children: const [
-                                Text(
+                              children: [
+                                const Text(
                                   "Total expenses",
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16),
                                 ),
-                                SizedBox(height: 20),
-                                Icon(Icons.payment, color: Colors.white, size: 58),
-                                SizedBox(height: 20),
-                                Text(
-                                  "₱980.00",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                const SizedBox(height: 20),
+                                const Icon(Icons.payment, color: Colors.white, size: 58),
+                                const SizedBox(height: 20),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    "₱${totalExpense.toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
+import 'package:intl/intl.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -14,19 +16,39 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController dateController = TextEditingController();
 
   final List<String> categories = [
-    "Salary",
-    "Allowance",
-    "Bonus",
-    "Gift",
-    "Others",
+    "Food",
+    "Transport",
+    "Bills",
+    "Recreation"
   ];
+
+  String? selectedCategory;
+  double totalExpense = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExpenseTotal();
+  }
+
+  Future<void> _loadExpenseTotal() async {
+    totalExpense = await DBHelper.instance.getTotalExpense();
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    labelController.dispose();
+    dateController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF020733),
-      body: 
-        SafeArea(
+      body: SafeArea(
         child: Column(
           children: [
             // HEADER
@@ -40,7 +62,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                   const SizedBox(width: 12),
                   const Text(
-                    "ADD EXPENSES",
+                    "ADD EXPENSE",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -51,20 +73,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
             ),
 
-            // TOTAL EXPENSES
+            // TOTAL EXPENSE
             Column(
-              children: const [
+              children: [
                 Text(
-                  "₱ 980.51",
-                  style: TextStyle(
+                  "₱${totalExpense.toStringAsFixed(2)}",
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 60,
                     fontFamily: 'Inter',
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  "TOTAL EXPENSES",
+                const SizedBox(height: 4),
+                const Text(
+                  "TOTAL EXPENSE",
                   style: TextStyle(
                     color: Color(0XFFFF4167),
                     fontSize: 22,
@@ -94,13 +116,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      // AMOUNT FIELD NI SYA
+
+                      // AMOUNT FIELD
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Amount",
-                            style:
-                                TextStyle(fontSize: 14, fontWeight: FontWeight.w600)
+                          const Text(
+                              "Amount",
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)
                           ),
                           const SizedBox(height: 8),
                           SizedBox(
@@ -121,10 +144,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 20),
 
-                      SizedBox(width: 301,
+                      SizedBox(
+                        width: 301,
                         child: Row(
                           children: [
                             Expanded(
@@ -132,11 +156,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text("Category",
-                                      style: TextStyle(
-                                          fontSize: 14, fontWeight: FontWeight.w600)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 8),
-
-                                  // DROPDOWN
                                   DropdownButtonFormField<String>(
                                     decoration: InputDecoration(
                                       filled: true,
@@ -146,13 +167,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                         borderSide: BorderSide.none,
                                       ),
                                     ),
-                                    items: categories
-                                        .map((c) => DropdownMenuItem(
-                                              value: c,
-                                              child: Text(c),
-                                            ))
-                                        .toList(),
-                                    onChanged: (value) {},
+                                    items: categories.map((c) => DropdownMenuItem(
+                                      value: c,
+                                      child: Text(c),
+                                    )).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedCategory = value;
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -162,15 +185,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
                             Expanded(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text("Date",
-                                      style: TextStyle(
-                                          fontSize: 14, fontWeight: FontWeight.w600)),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 8),
-
-                                  // DATE PICKER FIELD
                                   TextField(
                                     controller: dateController,
                                     readOnly: true,
@@ -178,19 +197,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                       hintText: "Tap to select date",
                                       suffixIcon: const Icon(Icons.calendar_today),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),  
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
                                         borderSide: BorderSide(
-                                          color: Colors.grey, // your desired color
+                                          color: Colors.grey,
                                           width: 1.5,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
                                         borderSide: BorderSide(
-                                          color: Colors.blue, // color when focused
+                                          color: Colors.blue,
                                           width: 2,
                                         ),
                                       ),
@@ -202,10 +221,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                         lastDate: DateTime(2100),
                                         initialDate: DateTime.now(),
                                       );
-
                                       if (pickedDate != null) {
-                                        dateController.text =
-                                            "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                                        dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
                                       }
                                     },
                                   ),
@@ -214,26 +231,21 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             ),
                           ],
                         ),
-
                       ),
-
-                      // PARA SA CATEGORY UG DATE
 
                       const SizedBox(height: 20),
 
+                      // LABEL FIELD
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Label",
-                              style:
-                                  TextStyle(fontSize: 14, fontWeight: FontWeight.w600)
-                          ),
+                          const Text("Label", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 8),
                           SizedBox(
                             width: 301,
                             child: TextField(
-                            controller: labelController,
-                            decoration: InputDecoration(
+                              controller: labelController,
+                              decoration: InputDecoration(
                                 hintText: "Enter label",
                                 filled: true,
                                 fillColor: Colors.grey[300],
@@ -244,17 +256,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               ),
                             ),
                           ),
-                        ]
+                        ],
                       ),
-                      
+
                       const SizedBox(height: 30),
 
-                      // SAVE UG CANCEL BUTTONS
+                      // SAVE & CANCEL BUTTONS
                       SizedBox(
                         width: 301,
                         child: Row(
                           children: [
-                            // SAVE
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -269,8 +280,28 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                onPressed: () {
-                                  // Save action
+                                onPressed: () async {
+                                  final amount = double.tryParse(amountController.text) ?? 0;
+
+                                  if (amount == 0 || selectedCategory == null || dateController.text.isEmpty || labelController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Please fill out all fields."),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  await DBHelper.instance.addTransaction({
+                                    "amount": amount,
+                                    "category": selectedCategory!,
+                                    "date": dateController.text,
+                                    "label": labelController.text,
+                                    "type": "expense",
+                                  });
+
+                                  Navigator.pop(context);
                                 },
                                 child: const Text("SAVE"),
                               ),
@@ -278,7 +309,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
                             const SizedBox(width: 16),
 
-                            // CANCEL
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -300,6 +330,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           ],
                         ),
                       ),
+
                     ],
                   ),
                 ),
@@ -307,7 +338,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             ),
           ],
         ),
-
       ),
     );
   }
